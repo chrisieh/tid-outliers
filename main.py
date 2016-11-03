@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # Sort 
     sorted_args = np.argsort(var)
     var = var[sorted_args]
-    weight = weight[sort_args]
+    weight = weight[sorted_args]
 
     min = var.min()
     max = var.max()
