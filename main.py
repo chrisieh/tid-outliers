@@ -1,5 +1,6 @@
 import argparse
-import ROOT
+from root_numpy import root2array
+import numpy as np
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -8,21 +9,34 @@ def get_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
-    print("Entering main")
     args = get_args()
     
-    # Check exist
-    infile = ROOT.TFile(args.filename, "READ")
-    tree = ROOT.TTree()
-    infile.GetObject("CollectionTree", tree)
+    data = root2array(args.filename, "CollectionTree",
+                      branches=[args.variable, "weight"])
+    var = data[args.variable]
+    weight = data["weight"]
 
-    minimum = tree.GetMinimum(args.variable)
-    maximum = tree.GetMaximum(args.variable)
-    hist = ROOT.TH1F("hist", "hist", 200, minimum, maximum)
-    tree.Draw("{0} >> hist".format(args.variable))
+    # Sort 
+    sorted_args = np.argsort(var)
+    var = var[sorted_args]
+    weight = weight[sort_args]
 
-    mean = hist.GetMean()
-    rms = hist.GetRMS()
+    min = var.min()
+    max = var.max()
+    mean = np.average(var, weights=weight)
+    rms = np.sqrt(np.average(np.power(var - mean, 2), weights=weight))
 
-    print("{0}, {1}".format(minimum, maximum))
-    print("{0}, {1}".format(mean, rms))
+    cdf = np.cumsum(weight)
+    cdf /= cdf[-1]
+
+    def quantile(q):
+        return var[np.argmax(cdf > q)]
+
+    print("Statistics for {} in {}".format(args.variable, args.filename))
+    print("min: {}\tmax: {}".format(min, max))
+    print("mean: {}\trms: {}".format(mean, rms))
+    print("0.25% {}\t99.75%: {}".format(quantile(0.0025), quantile(0.9975)))
+    print("0.5%: {}\t99.5%: {}".format(quantile(0.005), quantile(0.995)))
+    print("1%: {}\t99%: {}".format(quantile(0.01), quantile(0.99)))
+    print("2%: {}\t98%: {}".format(quantile(0.02), quantile(0.98)))
+
