@@ -15,7 +15,7 @@ if __name__ == "__main__":
                       branches=[args.variable, "weight"])
     var = data[args.variable]
     weight = data["weight"]
-
+    
     # Sort 
     sorted_args = np.argsort(var)
     var = var[sorted_args]
@@ -32,11 +32,5 @@ if __name__ == "__main__":
     def quantile(q):
         return var[np.argmax(cdf > q)]
 
-    print("Statistics for {} in {}".format(args.variable, args.filename))
-    print("min: {}\tmax: {}".format(min, max))
-    print("mean: {}\trms: {}".format(mean, rms))
-    print("0.25% {}\t99.75%: {}".format(quantile(0.0025), quantile(0.9975)))
-    print("0.5%: {}\t99.5%: {}".format(quantile(0.005), quantile(0.995)))
-    print("1%: {}\t99%: {}".format(quantile(0.01), quantile(0.99)))
-    print("2%: {}\t98%: {}".format(quantile(0.02), quantile(0.98)))
-
+    out = [args.variable, args.filename, min, max, mean, rms, quantile(0.0025), quantile(0.9975), quantile(0.005), quantile(0.995), quantile(0.01), quantile(0.99), quantile(0.02), quantile(0.98)]
+    print("\t".join([str(x) for x in out]))
