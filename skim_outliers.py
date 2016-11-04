@@ -59,13 +59,22 @@ if __name__ == "__main__":
     data = root2array(args.filename, "CollectionTree",
                       branches=[vardict[var] for var in mode] + ["weight"])
     
+    # Get rid of default value
+    if args.mode3p:
+        c = data[vardict["trFlightPathSig"]] > -1000
+        data = data[c]
+
     # Apply cuts
     pass_cuts = np.ones(shape=data.shape, dtype=bool)
     for var in mode:
         pass_cuts = np.logical_and(pass_cuts, cuts[var](data[vardict[var]]))
     fail_cuts = np.invert(pass_cuts)
     
-    eff = np.count_nonzero(pass_cuts) / len(pass_cuts)
+    num_pass = np.count_nonzero(pass_cuts)
+    total = len(pass_cuts)
+    eff = num_pass / total
+    print("Number of events passed: {}".format(num_pass))
+    print("Total number of events: {}".format(total))
     print("Cut efficiency: {}".format(eff))
 
     from root_numpy import array2root
